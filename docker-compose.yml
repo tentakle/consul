@@ -1,0 +1,56 @@
+version: '3'
+
+services:
+
+  haproxy:
+    container_name: haproxy
+    image: haproxy
+    restart: unless-stopped
+    volumes:
+    - ./haproxy:/usr/local/etc/haproxy:z
+    ports:
+    - 8080:8080
+
+  consul-server:
+    container_name: consul-server
+    image: consul
+    restart: unless-stopped
+    ports:
+    - 8500:8500
+    - 8600:8600/udp
+    volumes:
+    - ./consul.d:/etc/consul.d
+    command: agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0 -enable-script-checks=true -data-dir=/tmp/consul -config-dir=/etc/consul.d
+
+  consul-agent:
+    container_name: consul-agent
+    image: consul
+    restart: unless-stopped
+    command: agent -node=client-1 -join=consul-server
+
+  nginx-1:
+    container_name: nginx-1
+    image: nginx
+    restart: unless-stopped
+    volumes:
+    - ./nginx/index1.html:/usr/share/nginx/html/index.html:z
+    ports:
+    - 81:80
+
+  nginx-2:
+    container_name: nginx-2
+    image: nginx
+    restart: unless-stopped
+    volumes:
+    - ./nginx/index2.html:/usr/share/nginx/html/index.html:z
+    ports:
+    - 82:80
+
+  nginx-3:
+    container_name: nginx-3
+    image: nginx
+    restart: unless-stopped
+    volumes:
+    - ./nginx/index3.html:/usr/share/nginx/html/index.html:z
+    ports:
+    - 83:80
